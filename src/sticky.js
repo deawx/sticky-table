@@ -5,9 +5,10 @@
   var defaults = {
     offset: { top: 0, left: 0 },
     scrollContainer : window,
-    stickyCssClass : 'table-sticky-header',
-    nonStickyCssClass : 'table-nonsticky-header',
-    stickyColumns : 0,
+    headerCssClass : 'sticky-header',
+    columnCssClass : 'sticky-column',
+    cornerCssClass : 'sticky-corner',
+    columnCount : 0,
     cellWidth : 60,
     cellHeight: 20,
     cellCount : -1
@@ -28,15 +29,15 @@
                                 'display': 'none' }, tableCss ),
 
   scrollHandler = function( e ) {
-    var stickyheader = e.data,
+    var stickytable = e.data,
         $scrollContainer;
 
-    if ( stickyheader.$table.is( ':hidden' ) ) {
+    if ( stickytable.$table.is( ':hidden' ) ) {
       return;
     }
-    $scrollContainer = $( stickyheader.scrollContainer );
-    stickyheader.refresh( { top: $scrollContainer.scrollTop(),
-                            left: $scrollContainer.scrollLeft() } );
+    $scrollContainer = $( stickytable.scrollContainer );
+    stickytable.refresh( { top: $scrollContainer.scrollTop(),
+                           left: $scrollContainer.scrollLeft() } );
   },
 
   border = function( $elm, sides ) {
@@ -49,12 +50,12 @@
     return size;
   };
 
-  function StickyHeader( $elm, options ) {
+  function StickyTable( $elm, options ) {
     this.$table = $elm;
     $.extend( this, defaults, options );
   }
 
-  StickyHeader.prototype = {
+  StickyTable.prototype = {
 
     // attach scroll handler
     stick : function() {
@@ -67,50 +68,66 @@
       $( this.scrollContainer ).off( 'scroll', scrollHandler );
     },
 
-    initialize : function() {
-      var that = this;
+    // create sticky header, by clone thead of table
+    createHeader : function() {
       // create dummy table to use for sticky header
-      this.$stickyTableHeader = $( '<table></table>' )
+      return $( '<table></table>' )
         .append( this.$table.find( 'thead' ).clone() )
         .css( $.extend( { 'top': this.offset.top }, stickyTableHeaderCss ) )
-        .addClass( this.stickyCssClass ) // add class from options
+        .addClass( this.headerCssClass ) // add class from options
         .addClass( this.$table.attr( 'class' ) ); // add class(es) from real table
+    },
 
-      // create dummy table to use for sticky column
-      this.$stickyTableColumn = $( '<table></table>' )
-        .css( $.extend( { 'left':  this.offset.left, 'top':  this.offset.top },
-                          stickyTableColumnCss ) )
-        .addClass( this.stickyCssClass ) // add class from options
-        .addClass( this.$table.attr( 'class' ) ); // add class(es) from real table
+    // create sticky column, by cloning first this.columnCount tds from table
+    createColumn : function() {
+      var that = this,
+          // create dummy table to use for sticky column
+          $column = $( '<table></table>' )
+            .css( $.extend( { 'left':  this.offset.left, 'top':  this.offset.top },
+                              stickyTableColumnCss ) )
+            .addClass( this.columnCssClass ) // add class from options
+            .addClass( this.$table.attr( 'class' ) ); // add class(es) from real table
 
-      var columnSelector = '';
-      for ( var i = 0; i < this.stickyColumns; i++ ) {
-        columnSelector += 'td:nth-child(' + (i+1) + '), th:nth-child(' + (i+1) + ')';
+      var columnSelector = [];
+      for ( var i = 0; i < this.columnCount; i++ ) {
+        columnSelector.push( 'td:nth-child(' + (i+1) + '), th:nth-child(' + (i+1) + ')' );
       }
 
-      var $cells = $();
-      this.$table.find( columnSelector ).clone().each( function( idx, td ) {
-        $cells.add( $(td) );
-        if ( idx % that.stickyColumns === 0 ) {
-          var tr = $( '<tr></tr>' ).append( $cells );
-          that.$stickyTableColumn.append( tr );
-          console.log( tr );
-          $cells = $();
+      var cells = [];
+      this.$table.find( columnSelector.join(',') ).each( function( idx, td ) {
+          console.log( idx % that.columnCount, td.innerHTML );
+
+        cells.push( '<td>' + td.innerHTML + '</td>' );
+        if ( idx % that.columnCount === that.columnCount-1 ) {
+          $column.append( '<tr>' + cells.join('') + '</tr>' );
+          cells = [];
         }
       } );
+      return $column;
+    },
 
+    // create a div element that acts as a corner
+    createCorner : function() {
       // create dummy div for corner
-      this.$corner = $( '<div></div>' ).css(
+      return $( '<div></div>' ).css(
         $.extend( {
           'left':  this.offset.left,
           'top':  this.offset.top,
           'z-index': 1000 },
-        stickyCornerCss ) );
+        stickyCornerCss ) )
+      .addClass( this.cornerCssClass );
+    },
+
+    // Initialize sticky header, creates $stickyTableHeader, $stickyTableColumn
+    // and $stickyTableCorner which are the tables that are actually sticked to
+    // the top and left of the screen.
+    initialize : function() {
+      this.$stickyTableHeader = this.createHeader();
+      this.$stickyTableColumn = this.createColumn();
+      this.$stickyTableCorner = this.createCorner();
 
       // mark real table
-      this.$table
-        .css( tableCss )
-        .addClass( this.nonStickyCssClass );
+      this.$table.css( tableCss );
 
       // insert "dummies" before real table
       this.$table
@@ -118,7 +135,7 @@
           'table tr td, table tr th { ' +
           '  height: ' + this.cellHeight + 'px;' +
           '}</style>' )
-        .before( this.$corner )
+        .before( this.$stickyTableCorner )
         .before( this.$stickyTableColumn )
         .before( this.$stickyTableHeader );
 
@@ -129,35 +146,29 @@
       this.refreshWidths();
     },
 
-    // refresh sticky header, called when ever user scrolls
+    // refresh sticky table, called when ever user scrolls
     //
     // show/hide the sticky header as needed
-    //
-    // shows by sticky header by clone the table header and attaching the clone
-    // to the stickyheader table
-    //
-    // hides by replacing the header into the table again - is needed to
-    // support dom updates within the table headers whilst scrolling
     refresh : function( offset ) {
       var rawOffset = this.$table.offset(),
           tableOffSet = { top: rawOffset.top - this.offset.top,
                           left: rawOffset.left - this.offset.left },
-          stickyHeaderHidden = this.$stickyTableHeader.is( ':hidden' ),
+          stickytableHidden = this.$stickyTableHeader.is( ':hidden' ),
           stickyColumnHidden = this.$stickyTableColumn.is( ':hidden' ),
-          cornerHidden = this.$corner.is( ':hidden' );
+          cornerHidden = this.$stickyTableCorner.is( ':hidden' );
 
       offset.top = offset.top || $( this.scrollContainer ).scrollTop();
       offset.left = offset.left || $( this.scrollContainer ).scrollLeft();
 
       // turn on sticky header
-      if ( offset.top >= tableOffSet.top && stickyHeaderHidden ) {
+      if ( offset.top >= tableOffSet.top && stickytableHidden ) {
         this.$stickyTableHeader.show();
       }
 
       this.$stickyTableHeader.css( 'left', (offset.left * -1) + rawOffset.left );
 
       // turn off sticky header
-      if ( offset.top < tableOffSet.top  && !stickyHeaderHidden ) {
+      if ( offset.top < tableOffSet.top  && !stickytableHidden ) {
         this.$stickyTableHeader.hide();
       }
 
@@ -177,22 +188,21 @@
       if ( !this.$stickyTableHeader.is( ':hidden' ) &&
            !this.$stickyTableColumn.is( ':hidden' ) &&
            cornerHidden ) {
-        this.$corner.show();
+        this.$stickyTableCorner.show();
       }
       // hide corner when either header or column is visible
       if ( ( this.$stickyTableHeader.is( ':hidden' ) ||
              this.$stickyTableColumn.is( ':hidden' ) ) &&
            !cornerHidden ) {
-        this.$corner.hide();
+        this.$stickyTableCorner.hide();
       }
     },
 
     refreshWidths: function( ) {
       var width = this.cellCount * this.cellWidth,
-          stickyColumnWidth = this.stickyColumns * this.cellWidth,
+          stickyColumnWidth = this.columnCount * this.cellWidth,
           vertBorder = border( this.$stickyTableHeader, 'top bottom' ) +
                        border( this.$stickyTableHeader.find( 'td, th'), 'top bottom' ),
-
           horzBorder = border( this.$stickyTableHeader, 'left right' ) +
                        border( this.$stickyTableHeader.find( 'td, th'), 'left right' ),
 
@@ -202,24 +212,23 @@
       this.$stickyTableHeader.css( cssWidth );
       this.$stickyTableColumn.css( { 'max-width': stickyColumnWidth,
                                      'min-width': stickyColumnWidth } );
-      this.$corner.css( { 'border': '1px solid #ddd',
-                          'width': stickyColumnWidth-2,
-                          'height': this.$stickyTableHeader.height()-1 } );
+      this.$stickyTableCorner.css( { 'width': stickyColumnWidth-2,
+                                     'height': this.$stickyTableHeader.height()-1 } );
     }
   };
 
-  // sticky-header - jquery extension
-  // --------------------------------
+  // sticky - jquery extension that makes tables stick
+  // ---------------------------------------------------
   //
-  // Fixes table headers to top of screen when scrolled out of focus.
+  // sticks table headers to top of screen
   //
   // Usage:
   //
-  //     $( '.mytable' ).stickyheader();
+  //     $( '.mytable' ).sticky();
   //
   // Attaches it self to window.scroll, call unstick to detach:
   //
-  //     $( '.mytable' ).stickyheader( 'unstick' );
+  //     $( '.mytable' ).sticky( 'unstick' );
   //
   // Options:
   //
@@ -227,8 +236,7 @@
   //     { offset: 0,
   //     // container to attach scroll to - use to scroll in div with overflow
   //       scrollContainer : window }
-  //
-  $.fn.stickyheader = function( method, options ) {
+  $.fn.sticky = function( method, options ) {
     // use method a options if methods is an object
     options = $.extend( {}, typeof method === 'object' ? method : options || {} );
 
@@ -237,18 +245,14 @@
 
     this.each( function() {
       var $this = $(this),
-          stickyheader = $this.data( 'stickyheader' );
+          stickytable = $this.data( 'sticky' );
 
       // create and store fix header
-      if ( !stickyheader ) {
-        $this.data( 'stickyheader', ( stickyheader = new StickyHeader( $this, options ) ) );
+      if ( !stickytable ) {
+        $this.data( 'sticky', ( stickytable = new StickyTable( $this, options ) ) );
       }
       // call specified method
-      stickyheader[ method ]();
+      stickytable[ method ]();
     } );
   };
-
-  // attach FixHeader to $ to allow access to with using jquery plugin
-  $.StickyHeader = StickyHeader;
-
 } )( jQuery, window || {} );
