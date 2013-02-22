@@ -37,47 +37,47 @@ The sticky plugin supports the following options
     <tr>
       <td>offset</td>
       <td>{ top: 0, left: 0 }</td>
-      <td></td>
+      <td>Offset of fixed top and fixed left position. Specify these to change where the fixed header and column will start.</td>
     </tr>
     <tr>
       <td>scrollContainer</td>
       <td>window</td>
-      <td></td>
+      <td>Which container should scroll. </td>
     </tr>
     <tr>
       <td>headerCssClass</td>
       <td>'sticky-header'</td>
-      <td></td>
+      <td>css class of the sticky header</td>
     </tr>
     <tr>
       <td>columnCssClass</td>
       <td>'sticky-column'</td>
-      <td></td>
+      <td>css class of the sticky column</td>
     </tr>
     <tr>
       <td>cornerCssClass</td>
       <td>'sticky-corner'</td>
-      <td></td>
+      <td>css class of the sticky corner</td>
     </tr>
     <tr>
       <td>columnCount</td>
       <td>0</td>
-      <td></td>
+      <td>How many columns should stick</td>
     </tr>
     <tr>
       <td>cellWidth</td>
       <td>60</td>
-      <td></td>
+      <td>How wide are the cells</td>
     </tr>
     <tr>
       <td>cellHeight</td>
       <td>20</td>
-      <td></td>
+      <td>How tall are the cells</td>
     </tr>
     <tr>
       <td>cellCount</td>
       <td>-1</td>
-      <td></td>
+      <td>How many cells are there in a row. Will be calculated based on first row if -1</td>
     </tr>
   </tbody>
 </table>
