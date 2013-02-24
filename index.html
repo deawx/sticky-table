@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="sticky-table : jQuery plugin for sticky table headers and columns " />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>sticky-table</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/configit/sticky-table">View on GitHub</a>
+
+          <h1 id="project_title">sticky-table</h1>
+          <h2 id="project_tagline">jQuery plugin for sticky table headers and columns </h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/configit/sticky-table/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/configit/sticky-table/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>Sticky Table jQuery Plugin</h1>
+
+<p>Make header and a left column stick when scroll large tables.</p>
+
+<h2>Usage</h2>
+
+<p>This basic usage will make the headers of the table stick.</p>
+
+<div class="highlight"><pre><span class="nx">$</span><span class="p">(</span><span class="s1">'table'</span><span class="p">).</span><span class="nx">sticky</span><span class="p">();</span>
+</pre></div>
+
+<p>This will attach an event handler to the <code>window.scroll</code> to detach that call</p>
+
+<div class="highlight"><pre><span class="nx">$</span><span class="p">(</span><span class="s1">'table'</span><span class="p">).</span><span class="nx">sticky</span><span class="p">(</span><span class="s1">'unstick'</span><span class="p">);</span>
+</pre></div>
+
+<p>To get sticky columns must specify how many columns to stick, the following
+example will stick the first 2 columns</p>
+
+<div class="highlight"><pre><span class="nx">$</span><span class="p">(</span><span class="s1">'table'</span><span class="p">).</span><span class="nx">sticky</span><span class="p">(</span> <span class="p">{</span><span class="nx">columnCount</span><span class="o">:</span> <span class="mi">2</span><span class="p">}</span> <span class="p">);</span>
+</pre></div>
+
+<h2>Options</h2>
+
+<p>The sticky plugin supports the following options</p>
+
+<table>
+<tr>
+<th>Name</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+<tr>
+<td>offset</td>
+      <td>{ top: 0, left: 0 }</td>
+      <td>Offset of fixed top and fixed left position. Specify these to change where the fixed header and column will start.</td>
+    </tr>
+<tr>
+<td>scrollContainer</td>
+      <td>window</td>
+      <td>Which container should scroll. </td>
+    </tr>
+<tr>
+<td>headerCssClass</td>
+      <td>'sticky-header'</td>
+      <td>css class of the sticky header</td>
+    </tr>
+<tr>
+<td>columnCssClass</td>
+      <td>'sticky-column'</td>
+      <td>css class of the sticky column</td>
+    </tr>
+<tr>
+<td>cornerCssClass</td>
+      <td>'sticky-corner'</td>
+      <td>css class of the sticky corner</td>
+    </tr>
+<tr>
+<td>columnCount</td>
+      <td>0</td>
+      <td>How many columns should stick</td>
+    </tr>
+<tr>
+<td>cellWidth</td>
+      <td>60</td>
+      <td>How wide are the cells</td>
+    </tr>
+<tr>
+<td>cellHeight</td>
+      <td>20</td>
+      <td>How tall are the cells</td>
+    </tr>
+<tr>
+<td>cellCount</td>
+      <td>-1</td>
+      <td>How many cells are there in a row. Will be calculated based on first row if -1</td>
+    </tr>
+</table><h2>Limitations</h2>
+
+<p>The table cells must have a fixed width and height. That can be specified with the
+<code>cellWidth</code> and <code>cellHeight</code> options.</p>
+
+<p>The table cannot change position, e.g. get more margin after <code>.sticky</code> function has been applied.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">sticky-table maintained by <a href="https://github.com/configit">configit</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
