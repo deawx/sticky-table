@@ -68,11 +68,13 @@
     stick : function() {
       this.initialize();
       $( this.scrollContainer ).on( 'scroll', this, scrollHandler );
+      $( this.scrollContainer ).on( 'resize', this, scrollHandler );
     },
 
     // detach scroll handler
     unstick : function() {
       $( this.scrollContainer ).off( 'scroll', scrollHandler );
+      $( this.scrollContainer ).off( 'resize', scrollHandler );
     },
 
     // create sticky header, by clone thead of table
