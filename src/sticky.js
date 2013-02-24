@@ -93,23 +93,30 @@
             .css( $.extend( { 'left':  this.offset.left, 'top':  this.offset.top },
                               stickyTableColumnCss ) )
             .addClass( this.columnCssClass ) // add class from options
-            .addClass( this.$table.attr( 'class' ) ); // add class(es) from real table
+            .addClass( this.$table.attr( 'class' ) ),  // add class(es) from real table
+          columnSelector = [], // jQuery selector for selecting columns to copy
+          $cells, // selected tds and ths
+          cells = [], // cloned cells
+          i;
 
-      var columnSelector = [];
-      for ( var i = 0; i < this.columnCount; i++ ) {
+      for ( i = 0; i < this.columnCount; i++ ) {
         columnSelector.push( 'td:nth-child(' + (i+1) + '), th:nth-child(' + (i+1) + ')' );
       }
 
-      var cells = [];
-      this.$table.find( columnSelector.join(',') ).each( function( idx, td ) {
-          console.log( idx % that.columnCount, td.innerHTML );
+      $cells = this.$table.find( columnSelector.join(',') );
 
-        cells.push( '<td>' + td.innerHTML + '</td>' );
-        if ( idx % that.columnCount === that.columnCount-1 ) {
+      for ( i = 0; i < $cells.length; i++ ) {
+        var td = $cells[i];
+        cells.push( '<td colspan="' + td.colSpan + '" class="' + td.className + '">' + td.innerHTML + '</td>' );
+
+        // skip columns when colspan is specified
+        i += td.colSpan - 1;
+
+        if ( i % that.columnCount === that.columnCount-1 ) {
           $column.append( '<tr>' + cells.join('') + '</tr>' );
           cells = [];
         }
-      } );
+      }
       return $column;
     },
 
