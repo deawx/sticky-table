@@ -28,6 +28,8 @@
                                 'background-color':'white',
                                 'display': 'none' }, tableCss ),
 
+  // event handler attached to scroll event,
+  // will call StickyHeader.refresh with appropriate arguments
   scrollHandler = function( e ) {
     var stickytable = e.data,
         $scrollContainer;
@@ -40,6 +42,10 @@
                            left: $scrollContainer.scrollLeft() } );
   },
 
+  // Helper for calculating the border widths.
+  //
+  // Usage: border( $elm, 'top bottom' );
+  //   returns the width of the top and bottom
   border = function( $elm, sides ) {
     sides = sides.split( ' ' );
     var size = 0;
@@ -50,6 +56,7 @@
     return size;
   };
 
+  // StickyTable constructor function
   function StickyTable( $elm, options ) {
     this.$table = $elm;
     $.extend( this, defaults, options );
@@ -153,47 +160,47 @@
       var rawOffset = this.$table.offset(),
           tableOffSet = { top: rawOffset.top - this.offset.top,
                           left: rawOffset.left - this.offset.left },
-          stickytableHidden = this.$stickyTableHeader.is( ':hidden' ),
-          stickyColumnHidden = this.$stickyTableColumn.is( ':hidden' ),
+          headerHidden = this.$stickyTableHeader.is( ':hidden' ),
+          columnHidden = this.$stickyTableColumn.is( ':hidden' ),
           cornerHidden = this.$stickyTableCorner.is( ':hidden' );
 
       offset.top = offset.top || $( this.scrollContainer ).scrollTop();
       offset.left = offset.left || $( this.scrollContainer ).scrollLeft();
 
       // turn on sticky header
-      if ( offset.top >= tableOffSet.top && stickytableHidden ) {
+      if ( offset.top >= tableOffSet.top && headerHidden ) {
         this.$stickyTableHeader.show();
       }
 
       this.$stickyTableHeader.css( 'left', (offset.left * -1) + rawOffset.left );
 
       // turn off sticky header
-      if ( offset.top < tableOffSet.top  && !stickytableHidden ) {
+      if ( offset.top < tableOffSet.top  && !headerHidden ) {
         this.$stickyTableHeader.hide();
       }
 
       // turn on sticky column
-      if ( offset.left > tableOffSet.left && stickyColumnHidden ) {
+      if ( offset.left > tableOffSet.left && columnHidden ) {
         this.$stickyTableColumn.show();
       }
 
       this.$stickyTableColumn.css( 'top', (offset.top * -1) + rawOffset.top );
 
       // turn off sticky column
-      if ( offset.left <= tableOffSet.left  && !stickyColumnHidden ) {
+      if ( offset.left <= tableOffSet.left  && !columnHidden ) {
         this.$stickyTableColumn.hide();
       }
 
-      // show corner when both header and column are hidden
-      if ( !this.$stickyTableHeader.is( ':hidden' ) &&
-           !this.$stickyTableColumn.is( ':hidden' ) &&
-           cornerHidden ) {
+      // recalculate visibility of header and column
+      headerHidden = this.$stickyTableHeader.is( ':hidden' );
+      columnHidden = this.$stickyTableColumn.is( ':hidden' );
+
+      // show corner if both header and column are visible
+      if ( !headerHidden && !columnHidden && cornerHidden ) {
         this.$stickyTableCorner.show();
       }
-      // hide corner when either header or column is visible
-      if ( ( this.$stickyTableHeader.is( ':hidden' ) ||
-             this.$stickyTableColumn.is( ':hidden' ) ) &&
-           !cornerHidden ) {
+      // hide corner when either header and column are hidden
+      if ( ( headerHidden || columnHidden ) && !cornerHidden ) {
         this.$stickyTableCorner.hide();
       }
     },
