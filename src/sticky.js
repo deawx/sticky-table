@@ -76,6 +76,14 @@
       $( this.scrollContainer ).off( 'scroll', scrollHandler );
       $( this.scrollContainer ).off( 'resize', scrollHandler );
     },
+    
+     remove: function() {
+      this.unstick();
+      this.$stickyTableHeader.remove();
+      this.$stickyTableColumn.remove();
+      this.$stickyTableCorner.remove();
+      delete this.$table.data().sticky;
+    },
 
     // create sticky header, by clone thead of table
     createHeader : function() {
@@ -265,6 +273,9 @@
 
       // create and store fix header
       if ( !stickytable ) {
+        if ( method === 'remove' ) {
+          return;
+        }
         $this.data( 'sticky', ( stickytable = new StickyTable( $this, options ) ) );
       }
       // call specified method
