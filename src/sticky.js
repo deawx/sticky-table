@@ -8,6 +8,7 @@
     headerCssClass : 'sticky-header',
     columnCssClass : 'sticky-column',
     cornerCssClass : 'sticky-corner',
+    tableCssClass: 'table-non-sticky',
     columnCount : 0,
     cellWidth : 60,
     cellHeight: 20,
@@ -82,6 +83,7 @@
       this.$stickyTableHeader.remove();
       this.$stickyTableColumn.remove();
       this.$stickyTableCorner.remove();
+      this.$table.removeClass( this.tableCssClass );
       delete this.$table.data().sticky;
     },
 
@@ -150,6 +152,8 @@
       this.$stickyTableColumn = this.createColumn();
       this.$stickyTableCorner = this.createCorner();
 
+      this.$table.addClass( this.tableCssClass );
+      
       // mark real table
       this.$table.css( tableCss );
 
