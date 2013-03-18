@@ -37,7 +37,11 @@ The sticky plugin supports the following options
     <tr>
       <td>offset</td>
       <td>{ top: 0, left: 0 }</td>
-      <td>Offset of fixed top and fixed left position. Specify these to change where the fixed header and column will start.</td>
+      <td>Offset of fixed top and fixed left position. Specify these to change where the fixed header and column will start.
+
+      Offset may be specified as an array, like so: <code>[{width:900, top:0, left:0}, {top:40,left:0}]</code>.
+      This will make the stickyheader responsive, so that top:0 is used in windows widths smaller than 900 and top:40 as default.
+      </td>
     </tr>
     <tr>
       <td>scrollContainer</td>

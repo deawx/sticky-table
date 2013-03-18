@@ -43,41 +43,53 @@
                            left: $scrollContainer.scrollLeft() } );
   },
 
-  // Helper for calculating the border widths.
-  //
-  // Usage: border( $elm, 'top bottom' );
-  //   returns the width of the top and bottom
-  border = function( $elm, sides ) {
-    sides = sides.split( ' ' );
-    var size = 0;
+  resizeHandler = function( e ) {
+    var stickytable = e.data,
+        width;
 
-    for ( var i = 0; i < sides.length; i++ ) {
-      size += parseInt( $elm.css( 'border-' + sides[i] + '-width' ), 10 );
+    if ( stickytable.offsets ) {
+      stickytable.offset = findMatchingOffset( stickytable.offsets ) || defaults.offset;
+      stickytable.$stickyTableHeader.css( { 'top': stickytable.offset.top } );
     }
-    return size;
+
+    scrollHandler( e );
+  },
+
+  findMatchingOffset = function( offsets ) {
+    var width = $(window).width();
+    for ( var i = 0; i < offsets.length; i++ ) {
+      if ( width < offsets[i].width ) {
+        return offsets[i];
+      }
+    }
+    return offsets[offsets.length-1];
   };
 
   // StickyTable constructor function
   function StickyTable( $elm, options ) {
     this.$table = $elm;
+
+    if ( $.isArray( options.offset ) ) {
+      options.offsets = options.offset;
+      options.offset = findMatchingOffset( options.offsets ) || defaults.offset;
+    }
     $.extend( this, defaults, options );
   }
 
   StickyTable.prototype = {
-
     // attach scroll handler
     stick : function() {
       this.initialize();
       $( this.scrollContainer ).on( 'scroll', this, scrollHandler );
-      $( this.scrollContainer ).on( 'resize', this, scrollHandler );
+      $( this.scrollContainer ).on( 'resize', this, resizeHandler );
     },
 
     // detach scroll handler
     unstick : function() {
       $( this.scrollContainer ).off( 'scroll', scrollHandler );
-      $( this.scrollContainer ).off( 'resize', scrollHandler );
+      $( this.scrollContainer ).off( 'resize', resizeHandler );
     },
-    
+
      remove: function() {
       this.unstick();
       this.$stickyTableHeader.remove();
@@ -153,7 +165,7 @@
       this.$stickyTableCorner = this.createCorner();
 
       this.$table.addClass( this.tableCssClass );
-      
+
       // mark real table
       this.$table.css( tableCss );
 
@@ -229,11 +241,6 @@
     refreshWidths: function( ) {
       var width = this.cellCount * this.cellWidth,
           stickyColumnWidth = this.columnCount * this.cellWidth,
-          vertBorder = border( this.$stickyTableHeader, 'top bottom' ) +
-                       border( this.$stickyTableHeader.find( 'td, th'), 'top bottom' ),
-          horzBorder = border( this.$stickyTableHeader, 'left right' ) +
-                       border( this.$stickyTableHeader.find( 'td, th'), 'left right' ),
-
           cssWidth = { 'max-width': width, 'min-width': width };
 
       this.$table.css( cssWidth );
