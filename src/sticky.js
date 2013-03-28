@@ -120,7 +120,8 @@
             .addClass( this.$table.attr( 'class' ) ),  // add class(es) from real table
           columnSelector = [], // jQuery selector for selecting columns to copy
           $cells, // selected tds and ths
-          cells = [], // cloned cells
+          cells = [], // cloned cells,
+          rows = [],
           i;
 
       for ( i = 0; i < this.columnCount; i++ ) {
@@ -131,16 +132,17 @@
 
       for ( i = 0; i < $cells.length; i++ ) {
         var td = $cells[i];
-        cells.push( '<td colspan="' + td.colSpan + '" class="' + td.className + '">' + td.innerHTML + '</td>' );
+        cells.push( td.outerHTML );
 
         // skip columns when colspan is specified
         i += td.colSpan - 1;
 
         if ( i % that.columnCount === that.columnCount-1 ) {
-          $column.append( '<tr>' + cells.join('') + '</tr>' );
+          rows.push( '<tr>' + cells.join('') + '</tr>' );
           cells = [];
         }
       }
+      $column.append( rows.join('') );
       return $column;
     },
 
