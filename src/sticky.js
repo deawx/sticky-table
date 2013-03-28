@@ -26,6 +26,7 @@
                                      'display': 'none' }, tableCss ),
 
   stickyCornerCss = $.extend( { 'position': 'fixed',
+                                'margin-bottom':'0px',
                                 'background-color':'white',
                                 'display': 'none' }, tableCss ),
 
@@ -63,6 +64,35 @@
       }
     }
     return offsets[offsets.length-1];
+  },
+
+  buildColumnSelector = function( columnCount ) {
+    var columnSelector = [];
+    for ( var i = 0; i < columnCount; i++ ) {
+      columnSelector.push( 'td:nth-child(' + (i+1) + '), th:nth-child(' + (i+1) + ')' );
+    }
+    return columnSelector.join(',');
+  },
+
+  cloneCells = function( $cells, columnCount, maxRows ) {
+    var cells = [], rows = [];
+
+    for ( var i = 0; i < $cells.length; i++ ) {
+      var td = $cells[i];
+      cells.push( td.outerHTML );
+
+      // skip columns when colspan is specified
+      i += td.colSpan - 1;
+
+      if ( i % columnCount === columnCount-1 ) {
+        rows.push( '<tr>' + cells.join('') + '</tr>' );
+        if ( rows.length >= maxRows ) {
+          break;
+        }
+        cells = [];
+      }
+    }
+    return rows.join('');
   };
 
   // StickyTable constructor function
@@ -118,44 +148,30 @@
                               stickyTableColumnCss ) )
             .addClass( this.columnCssClass ) // add class from options
             .addClass( this.$table.attr( 'class' ) ),  // add class(es) from real table
-          columnSelector = [], // jQuery selector for selecting columns to copy
-          $cells, // selected tds and ths
-          cells = [], // cloned cells,
-          rows = [],
-          i;
+          columnSelector = buildColumnSelector( this.columnCount ); // jQuery selector for selecting columns to copy
 
-      for ( i = 0; i < this.columnCount; i++ ) {
-        columnSelector.push( 'td:nth-child(' + (i+1) + '), th:nth-child(' + (i+1) + ')' );
-      }
-
-      $cells = this.$table.find( columnSelector.join(',') );
-
-      for ( i = 0; i < $cells.length; i++ ) {
-        var td = $cells[i];
-        cells.push( td.outerHTML );
-
-        // skip columns when colspan is specified
-        i += td.colSpan - 1;
-
-        if ( i % that.columnCount === that.columnCount-1 ) {
-          rows.push( '<tr>' + cells.join('') + '</tr>' );
-          cells = [];
-        }
-      }
-      $column.append( rows.join('') );
+      $column.append( cloneCells( this.$table.find( columnSelector ),
+                                  this.columnCount ) );
       return $column;
     },
 
     // create a div element that acts as a corner
     createCorner : function() {
-      // create dummy div for corner
-      return $( '<div></div>' ).css(
-        $.extend( {
-          'left':  this.offset.left,
-          'top':  this.offset.top,
-          'z-index': 1000 },
-        stickyCornerCss ) )
-      .addClass( this.cornerCssClass );
+      var cornerCss = $.extend( {
+        'left':  this.offset.left,
+        'top':  this.offset.top,
+        'z-index': 1000
+      }, stickyTableColumnCss ),
+        $corner = $( '<table></table>' )
+          .css( cornerCss )
+          .addClass( this.cornerCssClass )
+          .addClass( this.$table.attr( 'class' ) ),
+        columnSelector = buildColumnSelector( this.columnCount );
+
+      $corner.append( cloneCells( this.$table.find( columnSelector ),
+                                  this.columnCount, 2 ) );
+
+      return $corner;
     },
 
     // Initialize sticky header, creates $stickyTableHeader, $stickyTableColumn
@@ -243,14 +259,17 @@
     refreshWidths: function( ) {
       var width = this.cellCount * this.cellWidth,
           stickyColumnWidth = this.columnCount * this.cellWidth,
-          cssWidth = { 'max-width': width, 'min-width': width };
+          cssWidth = { 'max-width': width, 'min-width': width, 'width': width };
 
       this.$table.css( cssWidth );
       this.$stickyTableHeader.css( cssWidth );
       this.$stickyTableColumn.css( { 'max-width': stickyColumnWidth,
-                                     'min-width': stickyColumnWidth } );
-      this.$stickyTableCorner.css( { 'width': stickyColumnWidth-2,
-                                     'height': this.$stickyTableHeader.height()-1 } );
+                                     'min-width': stickyColumnWidth,
+                                     'width' : stickyColumnWidth } );
+
+      this.$stickyTableCorner.css( { 'max-width': stickyColumnWidth,
+                                     'min-width': stickyColumnWidth,
+                                     'width' : stickyColumnWidth } );
     }
   };
 
