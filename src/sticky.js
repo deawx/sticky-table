@@ -86,7 +86,7 @@
 
       if ( i % columnCount === columnCount-1 ) {
         rows.push( '<tr>' + cells.join('') + '</tr>' );
-        if ( rows.length >= maxRows ) {
+        if ( rows.length > maxRows ) {
           break;
         }
         cells = [];
