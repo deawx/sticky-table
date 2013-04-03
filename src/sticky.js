@@ -84,7 +84,7 @@
       // skip columns when colspan is specified
       i += td.colSpan - 1;
 
-      if ( i % columnCount === columnCount-1 ) {
+      if ( i % columnCount === columnCount - 1 ) {
         rows.push( '<tr>' + cells.join('') + '</tr>' );
         if ( rows.length >= maxRows ) {
           break;
@@ -169,7 +169,7 @@
         columnSelector = buildColumnSelector( this.columnCount );
 
       $corner.append( cloneCells( this.$table.find( columnSelector ),
-                                  this.columnCount, 2 ) );
+                                  this.columnCount, this.$table.find( 'thead tr' ).length ) );
 
       return $corner;
     },
