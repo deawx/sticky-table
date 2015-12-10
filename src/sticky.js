@@ -168,8 +168,9 @@
           .addClass( this.$table.attr( 'class' ) ),
         columnSelector = buildColumnSelector( this.columnCount );
 
+      //When horizontal scrolling, multi-column lock out a list of bug floating effect
       $corner.append( cloneCells( this.$table.find( columnSelector ),
-                                  this.columnCount, this.$table.find( 'thead tr' ).length ) );
+                                  this.columnCount, this.$table.find( 'thead tr' ).length-1 ) );
 
       return $corner;
     },
